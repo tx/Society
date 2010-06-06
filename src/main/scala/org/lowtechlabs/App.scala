@@ -27,21 +27,19 @@ object App {
   def main(args: Array[String]) {
     val villein = new Villein(server, port, username, password)
     villein.createCloudFromRoster
-    for(i <- 0 until 60){
-      val farmProxies: List[FarmProxy] = villein.getCloudProxy.getFarmProxies.toArray.toList.asInstanceOf[List[FarmProxy]]
-      if(farmProxies.length > 0) {
-        try {
-          useSynchronousVillein(farmProxies.head)
-        } catch {
-            case e: TimeoutException => {
-              println("It took longer than 5 seconds to execute this job.")
-              exit(1)
-            }
+    print("\nTrying to get a farm proxy.")
+    while(villein.getCloudProxy.getFarmProxies.size == 0){
+      print(".")
+      Thread.sleep(1000L)
+    }
+    val farmProxies: List[FarmProxy] = villein.getCloudProxy.getFarmProxies.toArray.toList.asInstanceOf[List[FarmProxy]]
+    try {
+      useAsynchronousVillein(farmProxies.head)
+    } catch {
+        case e: TimeoutException => {
+          println("It took longer than 5 seconds to execute this job.")
+          exit(1)
         }
-      } else {
-        println("Try #" +i+ "; no farms found!")
-      }
-      Thread.sleep(1L)
     }
   }
   /*
@@ -85,7 +83,12 @@ object App {
 
   def useAsynchronousVillein(farmProxy: FarmProxy) = {
     val vmProxy: VmProxy = spawnAsynchronousVillein(farmProxy).head
+    println("We've got a vm, let's submit a job.")
     submitAsynchronousJob(vmProxy)
+    //Give it some time to work before killing it
+    Thread.sleep(10000L)
+    println("!!! DONE !!!")
+    terminateAsynchronousVillein(vmProxy)
 
   }
   /*
@@ -108,6 +111,11 @@ object App {
     val successSpawnHandler = new SuccessSpawnHandler[VmProxy]
     val errorSpawnHandler = new ErrorSpawnHandler[LopError]
     farmProxy.spawnVm("groovy", successSpawnHandler, errorSpawnHandler)
+    print("\nSpawned vm, waiting for it to come online")
+    while(farmProxy.getVmProxies.toArray.size == 0){
+      Thread.sleep(1000L)
+      print(".")
+    }
     farmProxy.getVmProxies.toArray.toList.asInstanceOf[List[VmProxy]]
   }
 
@@ -130,10 +138,12 @@ object App {
 
   def submitAsynchronousJob(vmProxy: VmProxy) = {
     val jobProxy = new JobProxy
+    println("launching job")
     jobProxy.setExpression("1 + 2;")
     val successSubmitHandler = new SuccessSubmitHandler[JobProxy]
     val errorSubmitHandler = new ErrorSubmitHandler[JobProxy]
     vmProxy.submitJob(jobProxy, successSubmitHandler, errorSubmitHandler)
+    println("Job launched, waiting for result.")
   }
   /*
     Handler<Object> successTerminateHandler = new Handler<Object>() {
@@ -176,6 +186,7 @@ case class ErrorSpawnHandler[T] extends SocietyHandler[T] {
 case class SuccessSubmitHandler[T] extends SocietyHandler[T] {
   override def handle(jp: T) = {
     val jobProxy = jp
+    println("Result: " +jobProxy.asInstanceOf[JobProxy].getResult)
   }
 }
 
