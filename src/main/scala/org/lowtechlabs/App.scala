@@ -1,7 +1,6 @@
 package org.lowtechlabs
 
-;
-
+import org.lowtechlabs.society._
 import org.linkedprocess.villein._
 import org.linkedprocess.LinkedProcess._
 import patterns.{TimeoutException, SynchronousPattern}
@@ -13,18 +12,25 @@ import org.linkedprocess.LopError
  *
  */
 object App {
-  /**
-   * server: the domain name or IP address of the XMPP server to log into.
-   * port: the port of the XMPP server (usually 5222).
-   * username: the account registered with the XMPP server.
-   * password: the account password.
-   */
-  val server = "tx-dev"
-  val port = 5222
-  val username = "mtodd"
-  val password = "secret"
-
   def main(args: Array[String]) {
+    /**
+     * server: the domain name or IP address of the XMPP server to log into.
+     * port: the port of the XMPP server (usually 5222).
+     * username: the account registered with the XMPP server.
+     * password: the account password.
+     */
+
+    //Get args in a simple way
+    val server   = if (args.length > 0) args(0)                   else "tx-dev"
+    val port     = if (args.length > 1) Long.parseLong(args(1))   else 5222
+    val username = if (args.length > 2) args(2)                   else "mtodd"
+    val password = if (args.length > 3) args(3) else {
+      val pwd = readLine
+      if (!pwd.isEmpty) pwd
+      else "secret"
+    }
+
+
     val villein = new Villein(server, port, username, password)
     villein.createCloudFromRoster
     print("\nTrying to get a farm proxy.")
@@ -33,14 +39,17 @@ object App {
       Thread.sleep(1000L)
     }
     val farmProxies: List[FarmProxy] = villein.getCloudProxy.getFarmProxies.toArray.toList.asInstanceOf[List[FarmProxy]]
+    useAsynchronousVillein(farmProxies.head)
+    
     try {
-      useAsynchronousVillein(farmProxies.head)
+      useSynchronousVillein(farmProxies.head)
     } catch {
         case e: TimeoutException => {
           println("It took longer than 5 seconds to execute this job.")
           exit(1)
         }
     }
+
   }
   /*
     // Synchronous Villein Java implementation
@@ -86,7 +95,7 @@ object App {
     println("We've got a vm, let's submit a job.")
     submitAsynchronousJob(vmProxy)
     //Give it some time to work before killing it
-    Thread.sleep(10000L)
+    Thread.sleep(5000L)
     println("!!! DONE !!!")
     terminateAsynchronousVillein(vmProxy)
 
@@ -139,7 +148,7 @@ object App {
   def submitAsynchronousJob(vmProxy: VmProxy) = {
     val jobProxy = new JobProxy
     println("launching job")
-    jobProxy.setExpression("1 + 2;")
+    jobProxy.setExpression("2 + 2;")
     val successSubmitHandler = new SuccessSubmitHandler[JobProxy]
     val errorSubmitHandler = new ErrorSubmitHandler[JobProxy]
     vmProxy.submitJob(jobProxy, successSubmitHandler, errorSubmitHandler)
@@ -164,49 +173,5 @@ object App {
     val successTerminateHandler = new SuccessTerminateHandler[java.lang.Object]
     val errorTerminateHandler = new ErrorTerminateHandler[LopError]
     vmProxy.terminateVm(successTerminateHandler, errorTerminateHandler)
-  }
-}
-trait SocietyHandler[T] extends Handler[T]{
-  override def handle(t: T): Unit
-}
-
-case class SuccessSpawnHandler[T] extends SocietyHandler[T] {
-  override def handle(jp: T) = {
-    val jobProxy = jp
-  }
-}
-
-case class ErrorSpawnHandler[T] extends SocietyHandler[T] {
-  override def handle(le: T) = {
-    println(le)
-    exit(1)
-  }
-}
-
-case class SuccessSubmitHandler[T] extends SocietyHandler[T] {
-  override def handle(jp: T) = {
-    val jobProxy = jp
-    println("Result: " +jobProxy.asInstanceOf[JobProxy].getResult)
-  }
-}
-
-case class ErrorSubmitHandler[T] extends SocietyHandler[T] {
-  override def handle(le: T) = {
-    println(le)
-    exit(1)
-  }
-}
-
-case class SuccessTerminateHandler[T] extends SocietyHandler[T] {
-  override def handle(obj: T) = {
-    println("All done. Goodbye!")
-    exit()
-  }
-}
-
-case class ErrorTerminateHandler[T] extends SocietyHandler[T] {
-  override def handle(le: T) = {
-    println(le)
-    exit(1)
   }
 }
