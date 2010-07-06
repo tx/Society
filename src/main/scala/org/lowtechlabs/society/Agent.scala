@@ -106,7 +106,11 @@ case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) wi
 
   override def use(farm: FarmProxy, farmType: String) = {
     println("Using asynchronous villein.")
-    //Is there a better method than picking the first?
+    /* As opposed to just grabbing the first vm this should
+      provide support for multiple vms and strategies such as
+      scatter gather.
+     */
+    //TODO Correctly handle a list of VMs
     val vm: VmProxy = spawn(farm, farmType).head
     println("Submitting job to " +farmType+ "vm:\n{" +job.getExpression+ "}")
     submitJob(vm)

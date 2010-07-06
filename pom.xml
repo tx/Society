@@ -6,7 +6,7 @@
   <version>1.0-SNAPSHOT</version>
   <inceptionYear>2008</inceptionYear>
   <properties>
-    <scala.version>2.8.0.RC1</scala.version>
+    <scala.version>2.8.0.Beta1-RC7</scala.version>
   </properties>
 
   <repositories>
@@ -19,6 +19,11 @@
       <id>akka</id>
       <name>Akka repo</name>
       <url>http://www.scalablesolutions.se/akka/repository/</url>
+    </repository>
+    <repository>
+        <id>clapper</id>
+        <name>Clapper repo</name>
+        <url>http://maven.clapper.org/org/clapper</url>
     </repository>
   </repositories>
 
@@ -46,10 +51,20 @@
       <artifactId>lopsided-villein</artifactId>
       <version>proto-0.1</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <artifactId>akka-core</artifactId>
       <groupId>se.scalablesolutions.akka</groupId>
       <version>0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.clapper</groupId>
+      <artifactId>grizzled-scala_2.8.0.RC3</artifactId>
+      <version>0.7.2</version>
+    </dependency> -->
+    <dependency>
+        <groupId>com.github.scopt</groupId>
+        <artifactId>scopt</artifactId>
+        <version>1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -69,7 +84,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>${project.groupId}.App</mainClass>
+              <mainClass>${project.groupId}.Society</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -118,7 +133,7 @@
           </descriptorRefs>
           <archive>
             <manifest>
-              <mainClass>${project.groupId}.App</mainClass>
+              <mainClass>${project.groupId}.Society</mainClass>
             </manifest>
           </archive>
         </configuration>
