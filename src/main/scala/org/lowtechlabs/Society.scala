@@ -60,8 +60,7 @@ object Society {
     if(args.length == 0) {
       print("\nNo args provided.\nWould you like to use the default values (y/n)?")
       readLine.toLowerCase match {
-	case "n" => showHelpAndQuit()
-	case "no" => showHelpAndQuit()
+	case s: String if (s.startsWith("n")) => showHelpAndQuit()
 	case _ => println("Using default values.")
       }
     }

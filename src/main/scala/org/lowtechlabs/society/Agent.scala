@@ -97,13 +97,16 @@ trait Asynchronous {
     }
     farm.getVmProxies.toArray.toList.asInstanceOf[List[VmProxy]]
   }
+  def submitJob(job: JobProxy, vm: VmProxy) = {
+    vm.submitJob(job, new SuccessSubmitHandler[JobProxy], new ErrorSubmitHandler[JobProxy])
+    println("Job launched, waiting for result.")
+  }
 
 }
 
 
 case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) with Asynchronous{
   //def this(job: JobProxy) = this(job, 5000L)
-
   override def use(farm: FarmProxy, farmType: String) = {
     println("Using asynchronous villein.")
     /* As opposed to just grabbing the first vm this should
@@ -113,15 +116,10 @@ case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) wi
     //TODO Correctly handle a list of VMs
     val vm: VmProxy = spawn(farm, farmType).head
     println("Submitting job to " +farmType+ "vm:\n{" +job.getExpression+ "}")
-    submitJob(vm)
+    submitJob(job, vm)
     //Give it some time to work before killing it
     Thread.sleep(timeout)
     println("Terminating vm.")
     terminate(vm)
-  }
-
-  def submitJob(vm: VmProxy) = {
-    vm.submitJob(job, new SuccessSubmitHandler[JobProxy], new ErrorSubmitHandler[JobProxy])
-    println("Job launched, waiting for result.")
   }
 }
