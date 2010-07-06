@@ -56,7 +56,7 @@ object Society {
     println("\tpassword=" + password)
     println("\tuseSynch=" + useSynch)
     println("----------------------------------------------")
-    if (interactiveMode) print("Press [Enter] to continue"); readLine()
+    if (interactiveMode) {print("Press [Enter] to continue"); readLine()}
     
     val villein = new Villein(hostname, port, username, password)
     villein.createCloudFromRoster
