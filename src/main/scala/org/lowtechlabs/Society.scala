@@ -15,13 +15,15 @@ object Society {
   var username = "mtodd"
   var password = "secret"
   var useSynch = false
+  var interactiveMode = false
 
   val parser = new OptionParser("Society") {
     opt("h","hostname", "The domain name or IP address of the XMPP server to log into.", {h: String => hostname = h})
     intOpt("p", "port", "The port of the XMPP server (usually 5222)", {p: Int => port = p})
     opt("u", "username", "The account registered with the XMPP server", {u:String => username = u})
     opt("p", "password", "The account password", {p: String => password = p})
-    booleanOpt("s", "synchronous", "Use synchronous villeins?", {s: Boolean => useSynch = s})
+    booleanOpt("s", "synchronous", "Use synchronous villeins? (usually only for testing)", {s: Boolean => useSynch = s})
+    booleanOpt("i", "interactive", "Interactive or headless mode?", {i: Boolean => interactiveMode = i})
   }
   /**
    * hostname: the domain name or IP address of the XMPP server to log into.
@@ -32,12 +34,12 @@ object Society {
   def main(args: Array[String]) {
     if(!parser.parse(args)) exit(1)
     if(hostname == "" || port > 65536 || port < 1) showHelp()
-    if(password == ""){
+    if(password == "" && interactiveMode){
       password = {
         print("password: ")
         val pwd = readLine
-        if (!pwd.isEmpty) pwd
-        else "secret"
+	if (pwd == "") println("WARNING: empty password was supplied.")
+        pwd
       }
     }
     if(args.length == 0) {
@@ -51,7 +53,7 @@ object Society {
     println("\tpassword=" + password)
     println("\tuseSynch=" + useSynch)
     println("----------------------------------------------")
-    print("Press [Enter] to continue"); readLine()
+    if (interactiveMode) print("Press [Enter] to continue"); readLine()
     
     val villein = new Villein(hostname, port, username, password)
     villein.createCloudFromRoster
