@@ -10,33 +10,45 @@ import org.github.scopt.OptionParser
  *
  */
 object Society {
-  var hostname   = "tx-dev"
+  var hostname = "tx-dev"
   var port     = 5222
   var username = "mtodd"
   var password = "secret"
   var useSynch = false
   var interactiveMode = false
   var expression = "6 * 9" //42
+  var file = ""
 
   val parser = new OptionParser("Society") {
     opt("h","hostname", "The domain name or IP address of the XMPP server to log into.", {h: String => hostname = h})
-    intOpt("p", "port", "The port of the XMPP server (usually 5222)", {p: Int => port = p})
-    opt("u", "username", "The account registered with the XMPP server", {u:String => username = u})
-    opt("p", "password", "The account password", {p: String => password = p})
-    booleanOpt("s", "synchronous", "Use synchronous villeins? (usually only for testing)", {s: Boolean => useSynch = s})
-    booleanOpt("i", "interactive", "Interactive or headless mode?", {i: Boolean => interactiveMode = i})
-    opt("e","expression", "An expression to be evaluated by the Groovy vm", {e: String => expression = e})
-
+    intOpt("p", "port", "The port of the XMPP server (usually 5222).", {p: Int => port = p})
+    opt("u", "username", "The account registered with the XMPP server.", {u:String => username = u})
+    opt("p", "password", "The account password.", {p: String => password = p})
+    opt("e","expression", "An expression to be evaluated by the Groovy VM.\n\tEither an expression or a file should be provided.", {e: String => expression = e})
+    opt("f","file", "A groovy file to evaluate.\n\tEither an expression or a file should be provided.", {f: String => file = f})
+    opt("s", "synchronous", "Use synchronous villeins (usually only for testing)?", {setUseSynch(true)})
+    opt("i", "interactive", "Include to enable interactive mode.", {setInteractiveMode(true)})
+    opt("?","help", "Display this!", {showHelpAndQuit()})
   }
+
   /**
    * hostname: the domain name or IP address of the XMPP server to log into.
    * port: the port of the XMPP server (usually 5222).
    * username: the account registered with the XMPP server.
-   * password: the account password.
+   * password: the account password.2
+   *
+   * 
    */
   def main(args: Array[String]) {
-    if(!parser.parse(args)) exit(1)
-    if(hostname == "" || port > 65536 || port < 1) showHelp()
+    try{
+      if(!parser.parse(args)) exit(1)
+    } catch {
+      case e: ArrayIndexOutOfBoundsException => {
+	println("Invalid argument!")
+	showHelpAndQuit()
+      }
+    }
+    if(hostname == "" || port > 65536 || port < 1) showHelpAndQuit()
     if(password == "" && interactiveMode){
       password = {
         print("password: ")
@@ -46,12 +58,17 @@ object Society {
       }
     }
     if(args.length == 0) {
-      println("No args provided. Using default values.")
+      print("\nNo args provided.\nWould you like to use the default values (y/n)?")
+      readLine.toLowerCase match {
+	case "n" => showHelpAndQuit()
+	case "no" => showHelpAndQuit()
+	case _ => println("Using default values.")
+      }
     }
     println("----------------------------------------------")
     println("Configuration:")
     println("\thostname=" + hostname)
-    println("\tport=" + port)
+    println("\tport="     + port)
     println("\tusername=" + username)
     println("\tpassword=" + password)
     println("\tuseSynch=" + useSynch)
@@ -76,8 +93,13 @@ object Society {
 
   }
 
-  def showHelp(){
+  def showHelpAndQuit(){
       print(parser.showUsage)
       exit(1)
   }
+  /* For scopt recovery */
+  private def setInteractiveMode(i: Boolean) = interactiveMode = i
+  private def setUseSynch(u: Boolean) = useSynch = u
+
+
 }
