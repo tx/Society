@@ -16,6 +16,7 @@ object Society {
   var password = "secret"
   var useSynch = false
   var interactiveMode = false
+  var expression = "6 * 9" //42
 
   val parser = new OptionParser("Society") {
     opt("h","hostname", "The domain name or IP address of the XMPP server to log into.", {h: String => hostname = h})
@@ -24,6 +25,8 @@ object Society {
     opt("p", "password", "The account password", {p: String => password = p})
     booleanOpt("s", "synchronous", "Use synchronous villeins? (usually only for testing)", {s: Boolean => useSynch = s})
     booleanOpt("i", "interactive", "Interactive or headless mode?", {i: Boolean => interactiveMode = i})
+    opt("e","expression", "An expression to be evaluated by the Groovy vm", {e: String => expression = e})
+
   }
   /**
    * hostname: the domain name or IP address of the XMPP server to log into.
@@ -66,7 +69,7 @@ object Society {
     val farmProxies: List[FarmProxy] = villein.getCloudProxy.getFarmProxies.toArray.toList.asInstanceOf[List[FarmProxy]]
     //Construct our job
     val job = new JobProxy
-    job.setExpression("3 + 5")
+    job.setExpression(expression)
     val agent = if(useSynch) SynchronousAgent(job, 5000L)
                 else AsynchronousAgent(job, 5000L)
     agent.use(farmProxies.head, "groovy")
