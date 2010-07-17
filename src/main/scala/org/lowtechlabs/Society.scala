@@ -19,7 +19,7 @@ object Society {
   var expression = "6 * 9" //42
   var file = ""
 
-  val parser = new OptionParser("Society") {
+  val parser = new OptionParser("java -jar society.jar ") {
     opt("h","hostname", "The domain name or IP address of the XMPP server to log into.", {h: String => hostname = h})
     intOpt("p", "port", "The port of the XMPP server (usually 5222).", {p: Int => port = p})
     opt("u", "username", "The account registered with the XMPP server.", {u:String => username = u})
@@ -35,7 +35,7 @@ object Society {
    * hostname: the domain name or IP address of the XMPP server to log into.
    * port: the port of the XMPP server (usually 5222).
    * username: the account registered with the XMPP server.
-   * password: the account password.2
+   * password: the account password.
    *
    * 
    */
