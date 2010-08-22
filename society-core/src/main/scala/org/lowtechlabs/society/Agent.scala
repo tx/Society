@@ -40,8 +40,6 @@ abstract class Agent(job: JobProxy) {
 */
 
 case class SynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job){
-//  def this(job: JobProxy) = this(job, 5000L)
-
   override def use(farm: FarmProxy, farmType: String) = {
     println("Using synchronous villein.")
     val startTime = System.currentTimeMillis
@@ -70,13 +68,24 @@ case class SynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job){
 }
 
 /**
-* Asynchronous
-* This trait adds support for spawning and terminating asynchronous
-* agents.
-*
-*/
-trait Asynchronous{
-/**
+ * A basic (test) Ansynchronous Agent
+ */
+case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) {
+  override def use(farm: FarmProxy, farmType: String) = {
+    /* As opposed to just grabbing the first vm this should
+      provide support for multiple vms and strategies such as
+      scatter gather.
+     */
+    //TODO Correctly handle a list of VMs
+    val vm: VmProxy = spawn(farm, farmType).head
+    println("Submitting job to " +farmType+ "vm:\n{" +job.getExpression+ "}")
+    submit(job, vm)
+    //Give it some time to work before killing it
+    Thread.sleep(timeout)
+    println("Terminating vm.")
+    vm.terminate()
+  }
+  /**
   * spawn
   * Continually try to get a access to a farm of the specified type. This will
   * check twice a second to see if any farms are available.
@@ -90,10 +99,16 @@ trait Asynchronous{
     }
     farm.getVmProxies.toArray.toList.asInstanceOf[List[VmProxy]]
   }
-  def submitJob(job: JobProxy, vm: VmProxy) = {
+
+  /**
+   * submit
+   * Submit a job to a specific VM. 
+   */
+  def submit(job: JobProxy, vm: VmProxy) = {
     vm.submit(job)
     println("Job launched, waiting for result.")
   }
+  /* Error handlers */
   implicit val jobSuccessHandler = new SuccessHandler[JobProxy]{
     override def handle(jobProxy: JobProxy) = {
       println("Result: " +jobProxy.getResult)
@@ -103,11 +118,11 @@ trait Asynchronous{
   implicit val jobErrorHandler = new ErrorHandler[JobProxy]
   implicit val successHandler = new SuccessHandler[Any]
   implicit val errorHandler = new ErrorHandler[LopError]
-  
-  implicit def societyVm(vm: VmProxy): SocietyVm = SocietyVm(vm)
-  implicit def societyFarm(farm: FarmProxy): SocietyFarm = SocietyFarm(farm)  
 
+  implicit def societyVm(vm: VmProxy): SocietyVm = SocietyVm(vm)
+  implicit def societyFarm(farm: FarmProxy): SocietyFarm = SocietyFarm(farm)
 }
+
 case class SocietyVm(vm: VmProxy){
   def submit(job: JobProxy)(implicit successHandler: SuccessHandler[JobProxy], errorHandler: ErrorHandler[JobProxy]) = vm.submitJob(job, successHandler, errorHandler)
   def terminate()(implicit successHandler: SuccessHandler[Any], errorHandler: ErrorHandler[LopError]): Unit = vm.terminateVm(successHandler.asInstanceOf[Handler[java.lang.Object]], errorHandler.asInstanceOf[Handler[LopError]])
@@ -115,22 +130,5 @@ case class SocietyVm(vm: VmProxy){
 
 case class SocietyFarm(farm: FarmProxy){
   def spawn(farmType: String)(implicit successHandler: SuccessHandler[VmProxy], errorHandler: ErrorHandler[LopError]): Unit = farm.spawnVm(farmType, successHandler, errorHandler)
-}
-
-case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) with Asynchronous {
-  override def use(farm: FarmProxy, farmType: String) = {
-    /* As opposed to just grabbing the first vm this should
-      provide support for multiple vms and strategies such as
-      scatter gather.
-     */
-    //TODO Correctly handle a list of VMs
-    val vm: VmProxy = spawn(farm, farmType).head
-    println("Submitting job to " +farmType+ "vm:\n{" +job.getExpression+ "}")
-    submitJob(job, vm)
-    //Give it some time to work before killing it
-    Thread.sleep(timeout)
-    println("Terminating vm.")
-    vm.terminate()
-  }
 }
 
