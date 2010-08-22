@@ -4,6 +4,7 @@ import org.lowtechlabs.society._
 import org.linkedprocess.villein._
 import proxies.{FarmProxy, JobProxy}
 import org.github.scopt.OptionParser
+import tools.nsc.io.File
 
 /**
  * Gonna use this class to test out a basic villein
@@ -21,7 +22,7 @@ object Society {
 
   val parser = new OptionParser("java -jar society.jar ") {
     opt("h","hostname", "The domain name or IP address of the XMPP server to log into.", {h: String => hostname = h})
-    intOpt("p", "port", "The port of the XMPP server (usually 5222).", {p: Int => port = p})
+    intOpt("port", "port", "The port of the XMPP server (usually 5222).", {p: Int => port = p})
     opt("u", "username", "The account registered with the XMPP server.", {u:String => username = u})
     opt("p", "password", "The account password.", {p: String => password = p})
     opt("e","expression", "An expression to be evaluated by the Groovy VM.\n\tEither an expression or a file should be provided.", {e: String => expression = e})
@@ -44,8 +45,8 @@ object Society {
       if(!parser.parse(args)) exit(1)
     } catch {
       case e: ArrayIndexOutOfBoundsException => {
-	println("Invalid argument!")
-	showHelpAndQuit()
+      println("Invalid argument!")
+      showHelpAndQuit()
       }
     }
     if(hostname == "" || port > 65536 || port < 1) showHelpAndQuit()
@@ -53,10 +54,11 @@ object Society {
       password = {
         print("password: ")
         val pwd = readLine
-	if (pwd == "") println("WARNING: empty password was supplied.")
+	    if (pwd == "") println("WARNING: empty password was supplied.")
         pwd
       }
     }
+
     if(args.length == 0) {
       print("\nNo args provided.\nWould you like to use the default values (y/n)?")
       readLine.toLowerCase match {

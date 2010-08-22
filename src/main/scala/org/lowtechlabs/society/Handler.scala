@@ -1,7 +1,8 @@
 package org.lowtechlabs.society
 
 import org.linkedprocess.villein._
-import proxies.JobProxy
+import proxies.{VmProxy, JobProxy}
+import org.linkedprocess.LopError
 
 /**
 * Handler.scala
@@ -10,7 +11,7 @@ import proxies.JobProxy
 * @version 0.1 
 */
 
-trait Handler[T] extends org.linkedprocess.villein.Handler[T]{
+abstract class Handler[T] extends org.linkedprocess.villein.Handler[T]{
   override def handle(t: T): Unit
   def printAndExit(obj: T) = {
     println(obj)
@@ -18,30 +19,10 @@ trait Handler[T] extends org.linkedprocess.villein.Handler[T]{
   }
 }
 
-case class SuccessSpawnHandler[T] extends Handler[T] {
-  override def handle(jp: T) = {
-    val jobProxy = jp
-  }
-}
-case class SuccessSubmitHandler[T] extends Handler[T] {
-  override def handle(jp: T) = {
-    val jobProxy = jp
-    println("Result: " +jobProxy.asInstanceOf[JobProxy].getResult)
-  }
-}
-case class SuccessTerminateHandler[T] extends Handler[T] {
-  override def handle(obj: T) = {
-    println("All done. Goodbye!")
-  }
+case class SuccessHandler[T] extends Handler[T] {
+  override def handle(t: T) = println(t)
 }
 
-case class ErrorSpawnHandler[T] extends Handler[T] {
+case class ErrorHandler[T] extends Handler[T] {
   override def handle(le: T) = printAndExit(le)
 }
-case class ErrorSubmitHandler[T] extends Handler[T] {
-  override def handle(le: T) = printAndExit(le)  
-}
-case class ErrorTerminateHandler[T] extends Handler[T] {
-  override def handle(le: T) = printAndExit(le)  
-}
-

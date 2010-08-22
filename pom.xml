@@ -56,11 +56,13 @@
       <groupId>se.scalablesolutions.akka</groupId>
       <version>0.6</version>
     </dependency>
+
     <dependency>
       <groupId>org.clapper</groupId>
       <artifactId>grizzled-scala_2.8.0.RC3</artifactId>
       <version>0.7.2</version>
-    </dependency> -->
+    </dependency>
+    -->
     <dependency>
         <groupId>com.github.scopt</groupId>
         <artifactId>scopt</artifactId>
