@@ -41,7 +41,7 @@ object Society {
    * 
    */
   def main(args: Array[String]) {
-    try{
+    try {
       if(!parser.parse(args)) exit(1)
     } catch {
       case e: ArrayIndexOutOfBoundsException => {
@@ -50,7 +50,7 @@ object Society {
       }
     }
     if(hostname == "" || port > 65536 || port < 1) showHelpAndQuit()
-    if(password == "" && interactiveMode){
+    if(password == "" && interactiveMode) {
       password = {
         print("password: ")
         val pwd = readLine
@@ -62,9 +62,8 @@ object Society {
     if(args.length == 0) {
       print("\nNo args provided.\nWould you like to use the default values (y/n)?")
       readLine.toLowerCase match {
-	case s: String if (s.startsWith("n")) => showHelpAndQuit()
-	case _ => println("Using default values.")
-      }
+	                           case s: String if (s.startsWith("n")) => showHelpAndQuit()
+                             case _ => println("Using default values.")}
     }
     println("----------------------------------------------")
     println("Configuration:")
@@ -74,8 +73,10 @@ object Society {
     println("\tpassword=" + password)
     println("\tuseSynch=" + useSynch)
     println("----------------------------------------------")
-    if (interactiveMode) {print("Press [Enter] to continue"); readLine()}
-    
+    if (interactiveMode) {
+      print("Press [Enter] to continue");
+      readLine()
+    } 
     val villein = new Villein(hostname, port, username, password)
     villein.createCloudFromRoster
     print("\nTrying to get a farm proxy.")

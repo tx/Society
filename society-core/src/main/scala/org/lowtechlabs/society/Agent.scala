@@ -6,6 +6,7 @@
 */
 package org.lowtechlabs.society
 
+import org.lowtechlabs.society.Processor._
 import org.linkedprocess.villein._
 import proxies.{FarmProxy, JobProxy, VmProxy}
 import patterns.{TimeoutException, SynchronousPattern}
@@ -68,9 +69,12 @@ case class SynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job){
 }
 
 /**
- * A basic (test) Ansynchronous Agent
+ * A basic (test) Asynchronous Agent
  */
 case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) {
+  //TODO: Remove default handlers
+  import org.lowtechlabs.society.DefaultHandlers._
+
   override def use(farm: FarmProxy, farmType: String) = {
     /* As opposed to just grabbing the first vm this should
       provide support for multiple vms and strategies such as
@@ -108,24 +112,8 @@ case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) {
     vm.submit(job)
     println("Job launched, waiting for result.")
   }
-  /* Error handlers */
-  implicit val jobSuccessHandler = new SuccessHandler[JobProxy]{
-    override def handle(jobProxy: JobProxy) = {
-      println("Result: " +jobProxy.getResult)
-    }
-  }
-  implicit val vmSuccessHandler = new SuccessHandler[VmProxy]
-  implicit val jobErrorHandler = new ErrorHandler[JobProxy]
-  implicit val successHandler = new SuccessHandler[Any]
-  implicit val errorHandler = new ErrorHandler[LopError]
 
-  implicit def societyVm(vm: VmProxy): SocietyVm = SocietyVm(vm)
   implicit def societyFarm(farm: FarmProxy): SocietyFarm = SocietyFarm(farm)
-}
-
-case class SocietyVm(vm: VmProxy){
-  def submit(job: JobProxy)(implicit successHandler: SuccessHandler[JobProxy], errorHandler: ErrorHandler[JobProxy]) = vm.submitJob(job, successHandler, errorHandler)
-  def terminate()(implicit successHandler: SuccessHandler[Any], errorHandler: ErrorHandler[LopError]): Unit = vm.terminateVm(successHandler.asInstanceOf[Handler[java.lang.Object]], errorHandler.asInstanceOf[Handler[LopError]])
 }
 
 case class SocietyFarm(farm: FarmProxy){

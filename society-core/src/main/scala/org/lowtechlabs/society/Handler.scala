@@ -26,3 +26,21 @@ case class SuccessHandler[T] extends Handler[T] {
 case class ErrorHandler[T] extends Handler[T] {
   override def handle(le: T) = printAndExit(le)
 }
+/** 
+* DefaultHandlers
+* Really dumb default error and success handlers.
+*   
+*/
+object DefaultHandlers {
+  implicit val jobSuccessHandler = new SuccessHandler[JobProxy]{
+    override def handle(jobProxy: JobProxy) = {
+      println("Result: " +jobProxy.getResult)
+    }
+  }
+  implicit val vmSuccessHandler = new SuccessHandler[VmProxy]
+  implicit val jobErrorHandler = new ErrorHandler[JobProxy]
+  implicit val successHandler = new SuccessHandler[Any]
+  implicit val errorHandler = new ErrorHandler[LopError]
+
+
+}
