@@ -7,6 +7,7 @@
 package org.lowtechlabs.society
 
 import org.lowtechlabs.society.Processor._
+import org.lowtechlabs.society.Cloud._
 import org.linkedprocess.villein._
 import proxies.{FarmProxy, JobProxy, VmProxy}
 import patterns.{TimeoutException, SynchronousPattern}
@@ -112,11 +113,4 @@ case class AsynchronousAgent(job: JobProxy, timeout: Long) extends Agent(job) {
     vm.submit(job)
     println("Job launched, waiting for result.")
   }
-
-  implicit def societyFarm(farm: FarmProxy): SocietyFarm = SocietyFarm(farm)
 }
-
-case class SocietyFarm(farm: FarmProxy){
-  def spawn(farmType: String)(implicit successHandler: SuccessHandler[VmProxy], errorHandler: ErrorHandler[LopError]): Unit = farm.spawnVm(farmType, successHandler, errorHandler)
-}
-

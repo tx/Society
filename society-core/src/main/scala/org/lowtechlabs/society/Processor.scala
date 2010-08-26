@@ -18,8 +18,10 @@ object Processor {
 }
 
 class Processor(vm: VmProxy){
-  def submit(job: JobProxy)(implicit successHandler: SuccessHandler[JobProxy], errorHandler: ErrorHandler[JobProxy]) = vm.submitJob(job, successHandler, errorHandler)
-  def terminate()(implicit successHandler: SuccessHandler[Any], errorHandler: ErrorHandler[LopError]): Unit = vm.terminateVm(successHandler.asInstanceOf[Handler[java.lang.Object]], errorHandler.asInstanceOf[Handler[LopError]])
+  def submit(job: JobProxy)(implicit successHandler: SuccessHandler[JobProxy], errorHandler: ErrorHandler[JobProxy]) = 
+    vm.submitJob(job, successHandler, errorHandler)
+  def terminate()(implicit successHandler: SuccessHandler[Any], errorHandler: ErrorHandler[LopError]): Unit = 
+    vm.terminateVm(successHandler.asInstanceOf[Handler[java.lang.Object]], errorHandler.asInstanceOf[Handler[LopError]])
 }
 
 
