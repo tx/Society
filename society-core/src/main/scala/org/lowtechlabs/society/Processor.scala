@@ -14,7 +14,7 @@ import proxies.{FarmProxy, JobProxy, VmProxy}
 import org.linkedprocess.LopError
 
 object Processor {
-  implicit def societyVmToProcessor(vm: VmProxy): Processor = new Processor(vm)
+  implicit def vmToProcessor(vm: VmProxy): Processor = new Processor(vm)
 }
 
 class Processor(vm: VmProxy){
